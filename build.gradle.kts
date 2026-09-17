@@ -4,7 +4,7 @@ import java.nio.file.Paths
 plugins {
     id("net.fabricmc.fabric-loom")
     `maven-publish`
-    id("org.jetbrains.kotlin.jvm") version "2.4.0"
+    id("org.jetbrains.kotlin.jvm") version "2.4.20"
 }
 
 version = providers.gradleProperty("mod_version").get()

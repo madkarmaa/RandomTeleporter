@@ -1,7 +1,6 @@
 package xyz.thewhitedog9487
 
 import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.loader.api.FabricLoader
 import org.slf4j.Logger
