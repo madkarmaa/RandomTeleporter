@@ -9,6 +9,10 @@ const MODRINTH_DEPENDENCIES = [
     { project_id: "Ha28R6CL", dependency_type: "required" }, // Fabric Language Kotlin
 ];
 
+// Servers need the mod, while players can join without it. Modrinth only takes this on version 3
+// of its API, where each version carries it.
+const MODRINTH_ENVIRONMENT = "server_only_client_optional";
+
 const readProperty = (cwd, name) => {
     const content = readFileSync(`${cwd}/gradle.properties`, "utf8");
     const value = content.match(new RegExp(`^${name}=(.+)$`, "m"))?.[1];
@@ -73,6 +77,7 @@ export const publish = async (_, { nextRelease, cwd, env, logger }) => {
             loaders: ["fabric"],
             version_type: "release",
             featured: true,
+            environment: MODRINTH_ENVIRONMENT,
             file_parts: ["jar"],
             primary_file: "jar",
         }),
@@ -83,7 +88,7 @@ export const publish = async (_, { nextRelease, cwd, env, logger }) => {
     // Content-Type lets the request set the multipart boundary itself.
     const version = await modrinth.request("/version", {
         api: "labrinth",
-        version: 2,
+        version: 3,
         method: "POST",
         body: form,
         headers: { "Content-Type": "" },
