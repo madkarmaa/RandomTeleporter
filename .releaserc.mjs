@@ -1,18 +1,18 @@
-const { readFileSync } = require("node:fs");
+import { readFileSync } from "node:fs";
 
 // Minecraft release ids have two or three numbers, such as 26.3 or 1.21.11, so the release name
 // uses the id as it is, without adding a patch number.
-const minecraftVersion = readFileSync(`${__dirname}/gradle.properties`, "utf8").match(
+const minecraftVersion = readFileSync(`${import.meta.dirname}/gradle.properties`, "utf8").match(
     /^minecraft_version=(.+)$/m,
 )?.[1];
 if (!minecraftVersion) throw new Error("gradle.properties sets no minecraft_version");
 
-module.exports = {
+export default {
     branches: ["main"],
     plugins: [
         "@semantic-release/commit-analyzer",
         "@semantic-release/release-notes-generator",
-        "./.github/scripts/release.cjs",
+        "./.github/scripts/release.mjs",
         [
             "@semantic-release/github",
             {

@@ -1,6 +1,7 @@
-const { execFileSync } = require("node:child_process");
-const { openAsBlob, readFileSync, writeFileSync } = require("node:fs");
-const { basename } = require("node:path");
+import { execFileSync } from "node:child_process";
+import { openAsBlob, readFileSync, writeFileSync } from "node:fs";
+import { basename } from "node:path";
+import { AuthFeature, GenericModrinthClient } from "@modrinth/api-client";
 
 // Modrinth names dependencies by project ID, not by slug.
 const MODRINTH_DEPENDENCIES = [
@@ -19,23 +20,20 @@ const readProperty = (cwd, name) => {
 const readModId = (cwd) =>
     JSON.parse(readFileSync(`${cwd}/src/main/resources/fabric.mod.json`, "utf8")).id;
 
-const createModrinthClient = async (env) => {
-    const { AuthFeature, GenericModrinthClient } = await import("@modrinth/api-client");
-
-    return new GenericModrinthClient({
+const createModrinthClient = (env) =>
+    new GenericModrinthClient({
         userAgent: "madkarmaa/RandomTeleporter release",
         // Modrinth takes a personal access token as it is, without the "Bearer" prefix.
         features: [new AuthFeature({ token: env.MODRINTH_TOKEN, tokenPrefix: "" })],
     });
-};
 
 // Finding the project before the release starts keeps a missing token or project from leaving a
 // release on GitHub that never reached Modrinth.
-exports.verifyConditions = async (_, { cwd, env }) => {
+export const verifyConditions = async (_, { cwd, env }) => {
     if (!env.MODRINTH_TOKEN) throw new Error("MODRINTH_TOKEN is not set");
 
     const modId = readModId(cwd);
-    const modrinth = await createModrinthClient(env);
+    const modrinth = createModrinthClient(env);
     await modrinth.labrinth.projects_v2.get(modId).catch((error) => {
         throw new Error(`MODRINTH_TOKEN cannot see a Modrinth project named ${modId}`, {
             cause: error,
@@ -44,7 +42,7 @@ exports.verifyConditions = async (_, { cwd, env }) => {
 };
 
 // The release version goes into gradle.properties, so the jar carries it.
-exports.prepare = (_, { nextRelease, cwd, env }) => {
+export const prepare = (_, { nextRelease, cwd, env }) => {
     const path = `${cwd}/gradle.properties`;
     const content = readFileSync(path, "utf8");
     const pattern = /^version=.*$/m;
@@ -54,12 +52,12 @@ exports.prepare = (_, { nextRelease, cwd, env }) => {
     execFileSync("./gradlew", ["build"], { cwd, env, stdio: "inherit" });
 };
 
-exports.publish = async (_, { nextRelease, cwd, env, logger }) => {
+export const publish = async (_, { nextRelease, cwd, env, logger }) => {
     const modId = readModId(cwd);
     const minecraftVersion = readProperty(cwd, "minecraft_version");
     const versionName = `${nextRelease.version}+${minecraftVersion}`;
     const jarPath = `${cwd}/build/libs/${modId}-${versionName}.jar`;
-    const modrinth = await createModrinthClient(env);
+    const modrinth = createModrinthClient(env);
     const project = await modrinth.labrinth.projects_v2.get(modId);
 
     const form = new FormData();
