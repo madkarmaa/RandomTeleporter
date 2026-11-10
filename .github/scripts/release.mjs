@@ -20,9 +20,23 @@ const readProperty = (cwd, name) => {
     return value;
 };
 
+const readModMetadata = (cwd) =>
+    JSON.parse(readFileSync(`${cwd}/src/main/resources/fabric.mod.json`, "utf8"));
+
 // The mod ID is also the slug of the Modrinth project and the start of the jar's name.
-const readModId = (cwd) =>
-    JSON.parse(readFileSync(`${cwd}/src/main/resources/fabric.mod.json`, "utf8")).id;
+const readModId = (cwd) => readModMetadata(cwd).id;
+
+// The README's relative paths only work inside the repository, so on Modrinth they point to the
+// files on GitHub as they are at the release's tag.
+const readDescription = (cwd, tag) => {
+    const repository = readModMetadata(cwd).contact.sources;
+    const files = `${repository}/blob/${tag}/`;
+    const rawFiles = `${repository.replace("github.com", "raw.githubusercontent.com")}/${tag}/`;
+
+    return readFileSync(`${cwd}/README.md`, "utf8")
+        .replaceAll('src="./', `src="${rawFiles}`)
+        .replaceAll("](./", `](${files}`);
+};
 
 const createModrinthClient = (env) =>
     new GenericModrinthClient({
@@ -93,6 +107,10 @@ export const publish = async (_, { nextRelease, cwd, env, logger }) => {
         body: form,
         headers: { "Content-Type": "" },
     });
+    await modrinth.labrinth.projects_v2.edit(project.id, {
+        body: readDescription(cwd, nextRelease.gitTag),
+    });
+
     const url = `https://modrinth.com/mod/${modId}/version/${version.id}`;
     logger.log(`Published ${versionName} to Modrinth: ${url}`);
     return { name: "Modrinth", url };
