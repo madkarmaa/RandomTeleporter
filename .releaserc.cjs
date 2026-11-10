@@ -19,7 +19,7 @@ module.exports = {
                 releaseNameTemplate: `<%= nextRelease.version %>+${minecraftVersion}`,
                 assets: [
                     {
-                        path: ["build/libs/randomteleporter-*.jar", "!build/libs/*-sources.jar"],
+                        path: ["build/libs/random-teleporter-*.jar", "!build/libs/*-sources.jar"],
                         label: "Mod jar",
                     },
                 ],

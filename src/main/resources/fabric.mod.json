@@ -1,6 +1,6 @@
 {
     "schemaVersion": 1,
-    "id": "randomteleporter",
+    "id": "random-teleporter",
     "version": "${version}",
     "name": "RandomTeleporter",
     "description": "Adds the /rtp command, which teleports players to random positions in the world.",
@@ -11,7 +11,7 @@
         "issues": "https://github.com/madkarmaa/RandomTeleporter/issues"
     },
     "license": "MIT",
-    "icon": "assets/randomteleporter/icon.png",
+    "icon": "assets/random-teleporter/icon.png",
     "environment": "*",
     "entrypoints": {
         "main": [

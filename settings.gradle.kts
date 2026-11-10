@@ -14,4 +14,4 @@ pluginManagement {
 }
 
 // Matches the mod id.
-rootProject.name = "randomteleporter"
+rootProject.name = "random-teleporter"
