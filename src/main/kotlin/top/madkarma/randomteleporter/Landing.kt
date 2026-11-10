@@ -6,8 +6,11 @@ import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.levelgen.Heightmap
 
-/** Only dimensions with a ceiling can have columns without a floor, so few tries are enough. */
-private const val MAX_ATTEMPTS = 16
+/**
+ * Most columns between the islands of the End have no ground, but the world generator rules those
+ * out without generating their chunks, so many tries stay cheap.
+ */
+private const val MAX_ATTEMPTS = 256
 
 private val PLATFORM_BLOCK = Blocks.GLASS
 
@@ -28,6 +31,7 @@ fun findLanding(level: ServerLevel, area: TeleportArea): BlockPos? {
     repeat(MAX_ATTEMPTS) {
         val x = area.randomX()
         val z = area.randomZ()
+        if (!hasTerrain(level, x, z)) return@repeat
 
         // The heightmap of a chunk that is not loaded yet only reports the bottom of the world.
         level.getChunk(SectionPos.blockToSectionCoord(x), SectionPos.blockToSectionCoord(z))
@@ -58,7 +62,27 @@ private fun landingY(level: ServerLevel, x: Int, z: Int): Int? {
     // heightmap would put the target on the roof.
     if (level.dimensionType().hasCeiling()) return floorBelowCeiling(level, x, z)
 
-    return level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z)
+    val y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z)
+
+    // The heightmap of a column without any ground reports the bottom of the world.
+    return y.takeIf { it > level.minY }
+}
+
+/**
+ * Asks the world generator whether the column has terrain, which is much faster than generating it.
+ */
+private fun hasTerrain(level: ServerLevel, x: Int, z: Int): Boolean {
+    val chunkSource = level.chunkSource
+    val terrainHeight =
+        chunkSource.generator.getBaseHeight(
+            x,
+            z,
+            Heightmap.Types.WORLD_SURFACE_WG,
+            level,
+            chunkSource.randomState(),
+        )
+
+    return terrainHeight > level.minY
 }
 
 /** Returns the highest feet position under the ceiling with room for the target to stand. */
