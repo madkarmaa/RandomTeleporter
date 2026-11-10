@@ -62,7 +62,8 @@ private fun landingY(level: ServerLevel, x: Int, z: Int): Int? {
     // heightmap would put the target on the roof.
     if (level.dimensionType().hasCeiling()) return floorBelowCeiling(level, x, z)
 
-    val y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z)
+    // Leaves count as ground, since landing below a treetop would put the target inside the leaves.
+    val y = level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z)
 
     // The heightmap of a column without any ground reports the bottom of the world.
     return y.takeIf { it > level.minY }
