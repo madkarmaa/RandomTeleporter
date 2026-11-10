@@ -1,142 +1,77 @@
-[//]: # (如果你是正在执行翻译任务的LLM：)
-[//]: # (请将这几行注释内容翻译到你的目标语言)
-[//]: # (移除下方div内部第一行和第二行的注释符号，并翻译其内容)
-[//]: # (不要翻译下方div内部a标签的文本内容和链接地址)
-[//]: # (不要改动下方div标签的align="center"属性)
-[//]: # (不要翻译最后一段“一些小彩蛋”，直接将其从翻译版本中移除)
-[//]: # (将翻译的结果放置到正确的文件内，目标文件的位置和主README.md同级，文件名格式是 README_<LANG>.md ，其中<LANG>的值是目标语言的IETF语言标签)
+# RandomTeleporter
 
-<div align="center">
-   <!-- <strong>注意：本文档由中文编写，使用AI翻译到其他语言。如果条件允许，建议阅读原始的中文文档而不是其他的翻译版本。</strong> -->
-   <!-- <br/> -->
-    <a href="https://github.com/TheWhiteDog9487/RandomTeleporter/blob/%E4%B8%BB%E8%A6%81/README.md">简体中文（GitHub）</a>&nbsp;&nbsp;&nbsp;&nbsp;
-    <a href="https://git.thewhitedog9487.xyz/TheWhiteDog9487/RandomTeleporter/src/branch/%E4%B8%BB%E8%A6%81/README.md">简体中文（Gitea）</a>&nbsp;&nbsp;&nbsp;&nbsp;
-    <a href="https://github.com/TheWhiteDog9487/RandomTeleporter/blob/%E4%B8%BB%E8%A6%81/README_EN.md">English（GitHub）</a>&nbsp;&nbsp;&nbsp;&nbsp;
-    <a href="https://git.thewhitedog9487.xyz/TheWhiteDog9487/RandomTeleporter/src/branch/%E4%B8%BB%E8%A6%81/README_EN.md">English（Gitea）</a>
-</div>
+A Fabric mod that adds the `/rtp` command, which teleports players to random positions in the
+world. It puts a small glass platform under the landing position when the ground there would not
+hold the player. In dimensions with a ceiling, such as the Nether, players land below the ceiling
+instead of on top of it.
 
-# 介绍
-这个模组增加了一个命令 `/rtp`，用于将玩家随机传送到世界的任何一个位置。
+## Requirements
 
-# 命令格式
-- `/rtp`
-- `/rtp back`
-- `/rtp back <被传送玩家ID>`
-- `/rtp <被传送玩家ID> back`
-- `/rtp <随机半径>`
-- `/rtp <被传送玩家ID>`
-- `/rtp <随机半径> <被传送玩家ID>`
-- `/rtp <被传送玩家ID> <随机半径>`
-- `/rtp <随机半径> <随机中心点坐标>`
-- `/rtp <随机半径> <被传送玩家ID> <作为随机中心的实体>`
-- `/rtp <随机半径> <被传送玩家ID> <随机中心点坐标>`
-- `/rtp <被传送玩家ID> <随机半径> <作为随机中心的实体>`
-- `/rtp <被传送玩家ID> <随机半径> <随机中心点坐标>`
-- `/rtp <随机区域起点坐标> <随机区域终点坐标>`
-- `/rtp <随机区域起点坐标> <随机区域终点坐标> <被传送玩家ID>`
-- `/rtp <被传送玩家ID> <随机区域起点坐标> <随机区域终点坐标>`
-- `/rtp <随机区域起点实体> <随机区域终点实体>`
-- `/rtp <随机区域起点实体> <随机区域终点实体> <被传送玩家ID>`
-
-## 命令示例
-- `/rtp`  
-将执行命令的玩家随机传送到以`(0,0)`为中心点， $2.9 \times 10^7 - 10^4$ 作为随机半径的范围内的随机一点  
-$2.9 \times 10^7 = 29,000,000$ = 两千九百万  
-$10^4 = 10,000$ = 一万
-
-- `/rtp back`  
-将执行命令的玩家传送回最近一次使用随机传送前的位置  
-**注意：这个功能保存的上一次随机传送前的位置信息只会在游戏（服务器）运行期间存在，游戏（服务器）关闭后就会丢失**
-
-- `/rtp back TheWhiteDog9487`  
-将TheWhiteDog9487传送回其最近一次使用随机传送前的位置
-
-- `/rtp TheWhiteDog9487 back`  
-将TheWhiteDog9487传送回其最近一次使用随机传送前的位置
-
-- `/rtp 1000`  
-将执行命令的玩家随机传送到以`(0,0)`为中心点，1000作为随机半径的范围内的随机一点
-
-- `/rtp TheWhiteDog9487`  
-将TheWhiteDog9487随机传送到以`(0,0)`为中心点， $2.9 \times 10^7 - 10^4$ 作为随机半径的范围内的随机一点  
-
-- `/rtp TheWhiteDog9487 1000`  
-将TheWhiteDog9487随机传送到以`(0,0)`为中心点，1000作为随机半径的范围内的随机一点  
-
-- `/rtp 1000 TheWhiteDog9487`  
-将TheWhiteDog9487随机传送到以`(0,0)`为中心点，1000作为随机半径的范围内的随机一点  
-
-- `/rtp 1000 10000 10000`  
-将执行命令的玩家随机传送到以`(10000,10000)`为中心点，1000作为随机半径的范围内的随机一点
-
-- `/rtp 1000 TheWhiteDog9487 TheWhiteDog_CN`  
-将TheWhiteDog9487随机传送到以TheWhiteDog_CN所在位置为中心点，1000作为随机半径的范围内的随机一点  
-
-- `/rtp 1000 TheWhiteDog9487 10000 10000`  
-将TheWhiteDog9487随机传送到以`(10000,10000)`为中心点，1000作为随机半径的范围内的随机一点  
-
-- `/rtp TheWhiteDog9487 1000 TheWhiteDog_CN`  
-将TheWhiteDog9487随机传送到以TheWhiteDog_CN所在位置为中心点，1000作为随机半径的范围内的随机一点  
-
-- `/rtp TheWhiteDog9487 1000 10000 10000`  
-将TheWhiteDog9487随机传送到以`(10000,10000)`为中心点，1000作为随机半径的范围内的随机一点  
-
-- `/rtp 10000.0 10000.0 20000.0 20000.0`  
-将执行命令的玩家随机传送到以`(10000,10000)`,`(20000,10000)`,`(20000,20000)`,`(10000,20000)`四个顶点围成的长方形区域内的随机一点  
-您需要提供的坐标是这个长方形的任意一个顶点和这个顶点对应的斜对角顶点的位置
-
-- `/rtp TheWhiteDog9487 10000.0 10000.0 20000.0 20000.0`  
-将TheWhiteDog9487随机传送到以`(10000,10000)`,`(20000,10000)`,`(20000,20000)`,`(10000,20000)`四个顶点围成的长方形区域内的随机一点  
-
-- `/rtp 10000.0 10000.0 20000.0 20000.0 TheWhiteDog9487`  
-将TheWhiteDog9487随机传送到以`(10000,10000)`,`(20000,10000)`,`(20000,20000)`,`(10000,20000)`四个顶点围成的长方形区域内的随机一点
-
-- `/rtp TheWhiteDog9487 TheWhiteDog_CN`  
-将命令执行者传送到以TheWhiteDog9487和TheWhiteDog_CN当前所在位置为对角线的长方形区域内的随机一点
-
-- `/rtp TheWhiteDog9487 TheWhiteDog_CN TheWhiteDog4568`  
-将TheWhiteDog4568随机传送到以TheWhiteDog9487和TheWhiteDog_CN当前所在位置为对角线的长方形区域内的随机一点
-
-### 特别提示
-`/rtp <随机半径> <作为随机中心的实体>` 这种格式不存在。  
-因为第二个参数可能是被传送玩家名，也可能是做随机中心点的实体。  
-这两种都是实体类型，无法区分到底是哪一种，存在歧义。  
-同样，`/rtp <被传送玩家ID> <随机区域起点实体> <随机区域终点实体>` 这一组也是不存在的  
-三个参数都是实体类型，没办法区分`被传送玩家ID`是第一个还是第三个
-
-# 依赖项
+- The Minecraft version set in [`gradle.properties`](./gradle.properties)
 - [Fabric API](https://modrinth.com/mod/fabric-api)
 - [Fabric Language Kotlin](https://modrinth.com/mod/fabric-language-kotlin)
 
-# 支持的游戏版本
-目前仅提供对最新正式版游戏的活跃支持
+## Commands
 
-# 关于玩家权限
-我参照原版的 `/tp` 命令，给 `/rtp` 设置了2级的权限要求。  
-如果是原版或者类原版，你只需要让玩家有作弊的权限就可以用。  
-插件服务器方面那些具体的权限分配，因为我自己没玩过所以我也没法给出参考意见。
+- `/rtp`
+- `/rtp back`
+- `/rtp back <target>`
+- `/rtp <target> back`
+- `/rtp <radius>`
+- `/rtp <target>`
+- `/rtp <radius> <target>`
+- `/rtp <target> <radius>`
+- `/rtp <radius> <originPos>`
+- `/rtp <radius> <target> <originEntity>`
+- `/rtp <radius> <target> <originPos>`
+- `/rtp <target> <radius> <originEntity>`
+- `/rtp <target> <radius> <originPos>`
+- `/rtp <regionFromPos> <regionToPos>`
+- `/rtp <regionFromPos> <regionToPos> <target>`
+- `/rtp <target> <regionFromPos> <regionToPos>`
+- `/rtp <regionFromEntity> <regionToEntity>`
+- `/rtp <regionFromEntity> <regionToEntity> <target>`
 
-# 在客户端还是服务器安装？
-分以下情况：  
-1. 单人游戏
-    1. 物理服务器不存在，所以服务器不用管
-    2. 客户端安装即可
-2. 单人游戏 + 开放局域网
-    1. 使用客户端内置的服务器，开放局域网的那位玩家的客户端需要安装
-    2. 其他加入游戏的玩家不需要安装
-3. 使用独立服务器（类似`server.jar`这种文件）
-    1. 服务器需要安装
-    2. 客户端不需要
+Without a target, the command teleports the player who runs it. Without a radius or region, it
+picks a position up to 28,990,000 blocks from `(0, 0)` on each axis.
 
-**注意：情况2和3，如果其他玩家不安装本模组，他们看到的命令执行反馈就无法正确使用翻译，而在这种情况下默认显示中文文本。  
-如果有查看多语言翻译文本的需求 ，那建议还是都装一下吧。**  
+`/rtp <radius> <originEntity>` does not exist, because both the target and the origin are entities,
+so the command could not tell them apart. For the same reason,
+`/rtp <target> <regionFromEntity> <regionToEntity>` does not exist either.
 
-# 一些小彩蛋
-你可以使用 `/随机传送` 来替代 `/rtp`  
-没错，Minecraft的命令是可以存在非ASCII字符的，所以我就整了一个  
-例如：  
-- `/rtp TheWhiteDog9487 1000`
-- `/随机传送 TheWhiteDog9487 1000`
+### Examples
 
-这两个命令的效果没有任何差别  
-玩家权限限制和 `/rtp` 当然也是一样的，都是2级
+- `/rtp` teleports you anywhere in the world.
+- `/rtp back` teleports you back to where you were before your last random teleport. The mod
+  forgets these positions when the server stops.
+- `/rtp back Steve` and `/rtp Steve back` teleport `Steve` back to where they were before their last
+  random teleport.
+- `/rtp 1000` teleports you up to `1000` blocks from `(0, 0)`.
+- `/rtp Steve` teleports `Steve` anywhere in the world.
+- `/rtp 1000 Steve` and `/rtp Steve 1000` teleport `Steve` up to `1000` blocks from `(0, 0)`.
+- `/rtp 1000 10000 10000` teleports you up to `1000` blocks from `(10000, 10000)`.
+- `/rtp 1000 Steve Alex` and `/rtp Steve 1000 Alex` teleport `Steve` up to `1000` blocks from
+  `Alex`.
+- `/rtp 1000 Steve 10000 10000` and `/rtp Steve 1000 10000 10000` teleport `Steve` up to `1000`
+  blocks from `(10000, 10000)`.
+- `/rtp 10000 10000 20000 20000` teleports you into the rectangle between the opposite corners
+  `(10000, 10000)` and `(20000, 20000)`.
+- `/rtp Steve 10000 10000 20000 20000` and `/rtp 10000 10000 20000 20000 Steve` teleport `Steve`
+  into the same rectangle.
+- `/rtp Steve Alex` teleports you into the rectangle between the positions of `Steve` and `Alex`.
+- `/rtp Steve Alex Notch` teleports `Notch` into the rectangle between the positions of `Steve`
+  and `Alex`.
+
+## Permissions
+
+Like the vanilla `/tp` command, `/rtp` requires permission level 2. In singleplayer, that means
+cheats must be on.
+
+## Installation
+
+The mod runs wherever the server runs:
+
+- In singleplayer, and when you open a world to LAN, install it on the client that hosts the world.
+- On a dedicated server, install it on the server.
+
+Players who join without the mod can still use the command, but they see its messages in English.
