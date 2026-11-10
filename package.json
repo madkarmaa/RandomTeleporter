@@ -1,6 +1,6 @@
 {
     "name": "randomteleporter",
-    "license": "WTFPL",
+    "license": "MIT",
     "private": true,
     "scripts": {
         "release": "semantic-release",

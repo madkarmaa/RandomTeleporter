@@ -10,7 +10,7 @@
         "sources": "https://github.com/madkarmaa/RandomTeleporter",
         "issues": "https://github.com/madkarmaa/RandomTeleporter/issues"
     },
-    "license": "WTFPL",
+    "license": "MIT",
     "icon": "assets/randomteleporter/icon.png",
     "environment": "*",
     "entrypoints": {
