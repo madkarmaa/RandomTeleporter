@@ -17,11 +17,9 @@ module.exports = {
             "@semantic-release/github",
             {
                 releaseNameTemplate: `<%= nextRelease.version %>+${minecraftVersion}`,
+                // Without a label, the release shows each asset by its file name.
                 assets: [
-                    {
-                        path: ["build/libs/random-teleporter-*.jar", "!build/libs/*-sources.jar"],
-                        label: "Mod jar",
-                    },
+                    { path: ["build/libs/random-teleporter-*.jar", "!build/libs/*-sources.jar"] },
                 ],
             },
         ],
