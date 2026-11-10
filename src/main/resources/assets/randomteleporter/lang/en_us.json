@@ -1,17 +1,6 @@
 {
-  "modmenu.nameTranslation.randomteleporter": "RandomTeleporter",
-  "modmenu.descriptionTranslation.randomteleporter": "Added two commands for random teleportation",
-  "info.success": "Teleported %s to %d %d %d",
-  "info.success.back": "Teleported %s back to original position",
-  "error.no_target": "There is no teleported target, and the teleported player ID is explicitly specified when executed by a non-player object",
-  "error.no_old_position": "%s has not used random teleport yet, so it cannot be traced back",
-  "bilibili": "Bilibili",
-  "command.argument.radius": "radius",
-  "command.argument.target": "teleported entity",
-  "command.argument.origin_pos": "origin(pos)",
-  "command.argument.origin_entity": "origin(entity)",
-  "command.argument.region_from_pos": "region start(pos)",
-  "command.argument.region_to_pos": "region end(pos)",
-  "command.argument.region_from_entity": "region start(entity)",
-  "command.argument.region_to_entity": "region end(entity)"
+    "commands.randomteleporter.teleported": "Teleported %s to %d %d %d",
+    "commands.randomteleporter.teleported_back": "Teleported %s back to the previous position",
+    "commands.randomteleporter.no_target": "No one to teleport. Name the target when the command does not run as a player",
+    "commands.randomteleporter.no_previous_position": "%s has not been randomly teleported yet, so it has nowhere to go back to"
 }

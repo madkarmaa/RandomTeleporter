@@ -1,38 +1,31 @@
 {
-	"schemaVersion": 1,
-	"id": "randomteleporter",
-	"version": "${version}",
-	"name": "RandomTeleporter",
-	"description": "增加了两个用于随机传送的命令",
-	"authors": [
-		"TheWhiteDog9487"
-	],
-	"contact": {
-		"homepage": "https://modrinth.com/mod/randomteleporter",
-		"sources": "https://github.com/TheWhiteDog9487/RandomTeleporter",
-		"issues": "https://github.com/TheWhiteDog9487/RandomTeleporter/issues"
-	},
-	"license": "WTFPL",
-	"icon": "assets/randomteleporter/icon.png",
-	"environment": "*",
-	"entrypoints": {
-		"main": [
-			{
-				"value": "xyz.thewhitedog9487.RandomTeleporter",
-				"adapter": "kotlin"
-			}
-		]
-	},
-	"depends": {
-		"fabricloader": ">=0.19.5",
-		"minecraft": "26.3",
-		"java": ">=25",
-		"fabric-api": ">=0.160.6",
-		"fabric-language-kotlin": "*"
-	},
-	"custom": {
-		"modmenu": {
-			"links": {
-				"bilibili": "https://space.bilibili.com/401746666"},
-			"update_checker": true } }
+    "schemaVersion": 1,
+    "id": "randomteleporter",
+    "version": "${version}",
+    "name": "RandomTeleporter",
+    "description": "Adds the /rtp command, which teleports players to random positions in the world.",
+    "authors": ["MadKarma"],
+    "contributors": ["TheWhiteDog9487"],
+    "contact": {
+        "sources": "https://github.com/madkarmaa/RandomTeleporter",
+        "issues": "https://github.com/madkarmaa/RandomTeleporter/issues"
+    },
+    "license": "WTFPL",
+    "icon": "assets/randomteleporter/icon.png",
+    "environment": "*",
+    "entrypoints": {
+        "main": [
+            {
+                "value": "top.madkarma.randomteleporter.RandomTeleporter",
+                "adapter": "kotlin"
+            }
+        ]
+    },
+    "depends": {
+        "fabricloader": ">=${loader_version}",
+        "minecraft": "~${minecraft_version}",
+        "java": ">=25",
+        "fabric-api": "*",
+        "fabric-language-kotlin": "*"
+    }
 }
