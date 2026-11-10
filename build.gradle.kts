@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     id("net.fabricmc.fabric-loom")
     id("org.jetbrains.kotlin.jvm") version "2.4.21"
+    id("com.diffplug.spotless") version "8.11.0"
 }
 
 val minecraftVersion = providers.gradleProperty("minecraft_version").get()
@@ -58,6 +59,37 @@ java {
     targetCompatibility = JavaVersion.VERSION_25
 }
 
+spotless {
+    kotlin {
+        target("**/*.kt")
+        // Eclipse-based tooling such as jdtls copies the sources into bin.
+        targetExclude("**/build/**", "**/bin/**")
+
+        ktfmt().configure {
+            it.setMaxWidth(100)
+            it.setBlockIndent(4)
+            it.setContinuationIndent(4)
+        }
+
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+
+    kotlinGradle {
+        target("**/*.gradle.kts")
+        targetExclude("**/build/**")
+
+        ktfmt().configure {
+            it.setMaxWidth(100)
+            it.setBlockIndent(4)
+            it.setContinuationIndent(4)
+        }
+
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+}
+
 tasks.jar {
     val projectName = project.name
     inputs.property("projectName", projectName)
@@ -66,3 +98,21 @@ tasks.jar {
         rename { "${it}_$projectName" }
     }
 }
+
+val bun: String =
+    providers
+        .environmentVariable("PATH")
+        .get()
+        .split(File.pathSeparator)
+        .map { File(it, "bun") }
+        .firstOrNull { it.canExecute() }
+        ?.path ?: "${System.getProperty("user.home")}/.bun/bin/bun"
+
+val formatWithBun = tasks.register<Exec>("formatWithBun") { commandLine(bun, "fmt") }
+
+tasks.spotlessApply { finalizedBy(formatWithBun) }
+
+val checkFormatWithBun =
+    tasks.register<Exec>("checkFormatWithBun") { commandLine(bun, "fmt", "--check") }
+
+tasks.spotlessCheck { finalizedBy(checkFormatWithBun) }
