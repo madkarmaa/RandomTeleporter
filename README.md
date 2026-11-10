@@ -2,8 +2,7 @@
 
 A Fabric mod that adds the `/rtp` command, which teleports players to random positions in the
 world. It puts a small glass platform under the landing position when the ground there would not
-hold the player. In dimensions with a ceiling, such as the Nether, players land below the ceiling
-instead of on top of it, and in the End they land on an island instead of in the void.
+hold the player.
 
 ## Requirements
 
@@ -34,10 +33,6 @@ instead of on top of it, and in the End they land on an island instead of in the
 
 Without a target, the command teleports the player who runs it. Without a radius or region, it
 picks a position up to 28,990,000 blocks from `(0, 0)` on each axis.
-
-`/rtp <radius> <originEntity>` does not exist, because both the target and the origin are entities,
-so the command could not tell them apart. For the same reason,
-`/rtp <target> <regionFromEntity> <regionToEntity>` does not exist either.
 
 ### Examples
 
