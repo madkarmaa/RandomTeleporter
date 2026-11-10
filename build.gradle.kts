@@ -42,17 +42,6 @@ afterEvaluate {
         jvmArguments.add("-javaagent:${MixinJarPath.absolutePath}")
         if (IsSupportDceVM == true) jvmArguments.add("-XX:+AllowEnhancedClassRedefinition") } }
 
-loom {
-    splitEnvironmentSourceSets()
-
-    mods {
-        register("randomteleporter") {
-            sourceSet(sourceSets.main.get())
-            sourceSet(sourceSets.getByName("client"))
-        }
-    }
-}
-
 dependencies {
     // To change the versions see the gradle.properties file
     minecraft("com.mojang:minecraft:${providers.gradleProperty("minecraft_version").get()}")
