@@ -7,8 +7,9 @@ import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.levelgen.Heightmap
 
 /**
- * Most columns between the islands of the End have no ground, but the world generator rules those
- * out without generating their chunks, so many tries stay cheap.
+ * Most columns between the islands of the End and many in the oceans of the Overworld have no dry
+ * ground, but the world generator rules those out without generating their chunks, so many tries
+ * stay cheap.
  */
 private const val MAX_ATTEMPTS = 256
 
@@ -31,7 +32,7 @@ fun findLanding(level: ServerLevel, area: TeleportArea): BlockPos? {
     repeat(MAX_ATTEMPTS) {
         val x = area.randomX()
         val z = area.randomZ()
-        if (!hasTerrain(level, x, z)) return@repeat
+        if (!hasDryGround(level, x, z)) return@repeat
 
         // The heightmap of a chunk that is not loaded yet only reports the bottom of the world.
         level.getChunk(SectionPos.blockToSectionCoord(x), SectionPos.blockToSectionCoord(z))
@@ -66,24 +67,29 @@ private fun landingY(level: ServerLevel, x: Int, z: Int): Int? {
     val y = level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z)
 
     // The heightmap of a column without any ground reports the bottom of the world.
-    return y.takeIf { it > level.minY }
+    if (y <= level.minY) return null
+
+    // Lakes, which the world generator adds after its estimate, can still cover the ground.
+    if (!level.getBlockState(BlockPos(x, y - 1, z)).fluidState.isEmpty) return null
+
+    return y
 }
 
 /**
- * Asks the world generator whether the column has terrain, which is much faster than generating it.
+ * Asks the world generator whether the column has ground that is not under water, which is much
+ * faster than generating it.
  */
-private fun hasTerrain(level: ServerLevel, x: Int, z: Int): Boolean {
-    val chunkSource = level.chunkSource
-    val terrainHeight =
-        chunkSource.generator.getBaseHeight(
-            x,
-            z,
-            Heightmap.Types.WORLD_SURFACE_WG,
-            level,
-            chunkSource.randomState(),
-        )
+private fun hasDryGround(level: ServerLevel, x: Int, z: Int): Boolean {
+    val surfaceY = generatedHeight(level, x, z, Heightmap.Types.WORLD_SURFACE_WG)
+    if (surfaceY <= level.minY) return false
 
-    return terrainHeight > level.minY
+    // The surface of an ocean is above its floor, while dry ground is both.
+    return surfaceY == generatedHeight(level, x, z, Heightmap.Types.OCEAN_FLOOR_WG)
+}
+
+private fun generatedHeight(level: ServerLevel, x: Int, z: Int, type: Heightmap.Types): Int {
+    val chunkSource = level.chunkSource
+    return chunkSource.generator.getBaseHeight(x, z, type, level, chunkSource.randomState())
 }
 
 /** Returns the highest feet position under the ceiling with room for the target to stand. */
