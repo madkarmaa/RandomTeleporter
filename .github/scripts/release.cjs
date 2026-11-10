@@ -2,8 +2,6 @@ const { execFileSync } = require("node:child_process");
 const { openAsBlob, readFileSync, writeFileSync } = require("node:fs");
 const { basename } = require("node:path");
 
-const MODRINTH_API = "https://api.modrinth.com/v2";
-
 // Modrinth names dependencies by project ID, not by slug.
 const MODRINTH_DEPENDENCIES = [
     { project_id: "P7dR8mSH", dependency_type: "required" }, // Fabric API
@@ -21,16 +19,14 @@ const readProperty = (cwd, name) => {
 const readModId = (cwd) =>
     JSON.parse(readFileSync(`${cwd}/src/main/resources/fabric.mod.json`, "utf8")).id;
 
-const modrinth = async (path, env, init = {}) => {
-    const response = await fetch(`${MODRINTH_API}${path}`, {
-        ...init,
-        headers: { Authorization: env.MODRINTH_TOKEN, "User-Agent": "RandomTeleporter release" },
-    });
-    if (!response.ok) {
-        throw new Error(`Modrinth refused ${path}: ${response.status} ${await response.text()}`);
-    }
+const createModrinthClient = async (env) => {
+    const { AuthFeature, GenericModrinthClient } = await import("@modrinth/api-client");
 
-    return response.json();
+    return new GenericModrinthClient({
+        userAgent: "madkarmaa/RandomTeleporter release",
+        // Modrinth takes a personal access token as it is, without the "Bearer" prefix.
+        features: [new AuthFeature({ token: env.MODRINTH_TOKEN, tokenPrefix: "" })],
+    });
 };
 
 // Finding the project before the release starts keeps a missing token or project from leaving a
@@ -38,7 +34,13 @@ const modrinth = async (path, env, init = {}) => {
 exports.verifyConditions = async (_, { cwd, env }) => {
     if (!env.MODRINTH_TOKEN) throw new Error("MODRINTH_TOKEN is not set");
 
-    await modrinth(`/project/${readModId(cwd)}`, env);
+    const modId = readModId(cwd);
+    const modrinth = await createModrinthClient(env);
+    await modrinth.labrinth.projects_v2.get(modId).catch((error) => {
+        throw new Error(`MODRINTH_TOKEN cannot see a Modrinth project named ${modId}`, {
+            cause: error,
+        });
+    });
 };
 
 // The release version goes into gradle.properties, so the jar carries it.
@@ -57,7 +59,8 @@ exports.publish = async (_, { nextRelease, cwd, env, logger }) => {
     const minecraftVersion = readProperty(cwd, "minecraft_version");
     const versionName = `${nextRelease.version}+${minecraftVersion}`;
     const jarPath = `${cwd}/build/libs/${modId}-${versionName}.jar`;
-    const project = await modrinth(`/project/${modId}`, env);
+    const modrinth = await createModrinthClient(env);
+    const project = await modrinth.labrinth.projects_v2.get(modId);
 
     const form = new FormData();
     form.append(
@@ -78,7 +81,15 @@ exports.publish = async (_, { nextRelease, cwd, env, logger }) => {
     );
     form.append("jar", await openAsBlob(jarPath), basename(jarPath));
 
-    const version = await modrinth("/version", env, { method: "POST", body: form });
+    // The client's createVersion uploads through XMLHttpRequest, which only browsers have. An empty
+    // Content-Type lets the request set the multipart boundary itself.
+    const version = await modrinth.request("/version", {
+        api: "labrinth",
+        version: 2,
+        method: "POST",
+        body: form,
+        headers: { "Content-Type": "" },
+    });
     const url = `https://modrinth.com/mod/${modId}/version/${version.id}`;
     logger.log(`Published ${versionName} to Modrinth: ${url}`);
     return { name: "Modrinth", url };
