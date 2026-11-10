@@ -50,4 +50,5 @@ jobs:
             - name: Release
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
               run: bun run release
