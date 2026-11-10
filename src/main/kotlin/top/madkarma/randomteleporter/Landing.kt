@@ -6,6 +6,9 @@ import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.levelgen.Heightmap
 
+/** Only dimensions with a ceiling can have columns without a floor, so few tries are enough. */
+private const val MAX_ATTEMPTS = 16
+
 private val PLATFORM_BLOCK = Blocks.GLASS
 
 /** The blocks under the landing position that the platform replaces, so the target cannot fall. */
@@ -20,15 +23,20 @@ private val PLATFORM_REPLACEABLE_BLOCKS =
         Blocks.VINE,
     )
 
-/** Picks a random column in [area] and returns where to stand in it. */
-fun findLanding(level: ServerLevel, area: TeleportArea): BlockPos {
-    val x = area.randomX()
-    val z = area.randomZ()
+/** Picks a random column in [area] and returns where to stand in it, or null if none fits. */
+fun findLanding(level: ServerLevel, area: TeleportArea): BlockPos? {
+    repeat(MAX_ATTEMPTS) {
+        val x = area.randomX()
+        val z = area.randomZ()
 
-    // The heightmap of a chunk that is not loaded yet only reports the bottom of the world.
-    level.getChunk(SectionPos.blockToSectionCoord(x), SectionPos.blockToSectionCoord(z))
+        // The heightmap of a chunk that is not loaded yet only reports the bottom of the world.
+        level.getChunk(SectionPos.blockToSectionCoord(x), SectionPos.blockToSectionCoord(z))
 
-    return BlockPos(x, level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z), z)
+        val y = landingY(level, x, z) ?: return@repeat
+        return BlockPos(x, y, z)
+    }
+
+    return null
 }
 
 /** Turns the 3×3 blocks under [landing] into a platform where they would not hold the target. */
@@ -43,4 +51,30 @@ fun placePlatform(level: ServerLevel, landing: BlockPos) {
             level.setBlockAndUpdate(position, PLATFORM_BLOCK.defaultBlockState())
         }
     }
+}
+
+private fun landingY(level: ServerLevel, x: Int, z: Int): Int? {
+    // A ceiling, such as the bedrock roof of the Nether, is the top of every column, so the
+    // heightmap would put the target on the roof.
+    if (level.dimensionType().hasCeiling()) return floorBelowCeiling(level, x, z)
+
+    return level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z)
+}
+
+/** Returns the highest feet position under the ceiling with room for the target to stand. */
+private fun floorBelowCeiling(level: ServerLevel, x: Int, z: Int): Int? {
+    val position = BlockPos.MutableBlockPos(x, 0, z)
+    val ceilingY = level.minY + level.logicalHeight
+
+    for (feetY in ceilingY - 2 downTo level.minY + 1) {
+        if (!level.getBlockState(position.setY(feetY + 1)).isAir) continue
+        if (!level.getBlockState(position.setY(feetY)).isAir) continue
+
+        // The platform covers liquids. Bedrock never counts, since the air pockets inside the
+        // bedrock roof of the Nether would otherwise trap the target in the roof.
+        val ground = level.getBlockState(position.setY(feetY - 1))
+        if ((ground.isSolid || ground.liquid()) && !ground.`is`(Blocks.BEDROCK)) return feetY
+    }
+
+    return null
 }

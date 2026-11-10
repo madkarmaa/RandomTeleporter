@@ -16,12 +16,21 @@ private fun noTarget(): Component =
         "No one to teleport. Name the target when the command does not run as a player",
     )
 
-/** Teleports [target] to a random position in [area] and remembers where it came from. */
+/** Teleports [target] to a random safe position in [area] and remembers where it came from. */
 fun randomTeleport(source: CommandSourceStack, target: Entity?, area: TeleportArea): Int {
     if (target == null) return fail(source, noTarget())
 
     val level = target.level() as ServerLevel
-    val landing = findLanding(level, area)
+    val landing =
+        findLanding(level, area)
+            ?: return fail(
+                source,
+                Component.translatableWithFallback(
+                    "commands.randomteleporter.no_safe_position",
+                    "Found no safe position to teleport %s to",
+                    target.name,
+                ),
+            )
 
     placePlatform(level, landing)
     TeleportHistory.remember(target)
