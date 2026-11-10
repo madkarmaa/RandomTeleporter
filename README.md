@@ -1,4 +1,7 @@
-# RandomTeleporter
+<div align="center">
+    <img src="./src/main/resources/assets/random-teleporter/icon.png" alt="RandomTeleporter" width="150" height="auto" />
+    <h1>RandomTeleporter</h1>
+</div>
 
 A Fabric mod that adds the `/rtp` command, which teleports players to random positions in the
 world. It puts a small glass platform under the landing position when the ground there would not
