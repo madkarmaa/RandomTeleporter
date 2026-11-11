@@ -18,16 +18,25 @@ private val PLATFORM_REPLACEABLE_BLOCKS =
         Blocks.VINE,
     )
 
-/** Turns the 3×3 blocks under [landing] into a platform where they would not hold the target. */
+/**
+ * Turns the 3×3 blocks under [landing] into a platform where they would not hold the target, unless
+ * the block right under it already does.
+ */
 fun placePlatform(level: ServerLevel, landing: BlockPos) {
+    // A platform around ground that holds the target would only litter the world.
+    if (!isReplaceable(level, landing.below())) return
+
     val position = BlockPos.MutableBlockPos()
 
     for (offsetX in -1..1) {
         for (offsetZ in -1..1) {
             position.set(landing.x + offsetX, landing.y - 1, landing.z + offsetZ)
-            if (level.getBlockState(position).block !in PLATFORM_REPLACEABLE_BLOCKS) continue
+            if (!isReplaceable(level, position)) continue
 
             level.setBlockAndUpdate(position, PLATFORM_BLOCK.defaultBlockState())
         }
     }
 }
+
+private fun isReplaceable(level: ServerLevel, position: BlockPos): Boolean =
+    level.getBlockState(position).block in PLATFORM_REPLACEABLE_BLOCKS
