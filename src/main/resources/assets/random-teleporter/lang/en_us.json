@@ -1,5 +1,5 @@
 {
-    "commands.randomteleporter.teleported": "Teleported %s to %d %d %d",
+    "commands.randomteleporter.teleported": "Teleported %s to %s %s %s",
     "commands.randomteleporter.teleported_back": "Teleported %s back to the previous position",
     "commands.randomteleporter.no_target": "No one to teleport. Name the target when the command does not run as a player",
     "commands.randomteleporter.no_previous_position": "%s has not been randomly teleported yet, so it has nowhere to go back to",

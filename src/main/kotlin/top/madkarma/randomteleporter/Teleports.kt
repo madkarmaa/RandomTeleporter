@@ -49,7 +49,7 @@ fun randomTeleport(source: CommandSourceStack, target: Entity?, area: TeleportAr
         {
             Component.translatableWithFallback(
                 "commands.randomteleporter.teleported",
-                "Teleported %s to %d %d %d",
+                "Teleported %s to %s %s %s",
                 target.name,
                 landing.x,
                 landing.y,
