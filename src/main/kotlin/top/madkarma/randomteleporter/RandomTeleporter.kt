@@ -5,8 +5,6 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 
 object RandomTeleporter : ModInitializer {
-    const val MOD_ID: String = "randomteleporter"
-
     override fun onInitialize() {
         CommandRegistrationCallback.EVENT.register { dispatcher, _, _ ->
             RtpCommand.register(dispatcher)
