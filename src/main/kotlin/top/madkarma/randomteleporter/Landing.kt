@@ -54,16 +54,15 @@ private fun landingY(level: ServerLevel, x: Int, z: Int): Int? {
  * faster than generating it.
  */
 private fun hasDryGround(level: ServerLevel, x: Int, z: Int): Boolean {
-    val surfaceY = generatedHeight(level, x, z, Heightmap.Types.WORLD_SURFACE_WG)
-    if (surfaceY <= level.minY) return false
-
-    // The surface of an ocean is above its floor, while dry ground is both.
-    return surfaceY == generatedHeight(level, x, z, Heightmap.Types.OCEAN_FLOOR_WG)
-}
-
-private fun generatedHeight(level: ServerLevel, x: Int, z: Int, type: Heightmap.Types): Int {
     val chunkSource = level.chunkSource
-    return chunkSource.generator.getBaseHeight(x, z, type, level, chunkSource.randomState())
+    val blocks = chunkSource.generator.getBaseColumn(x, z, level, chunkSource.randomState())
+
+    for (y in level.maxY downTo level.minY) {
+        val surface = blocks.getBlock(y)
+        if (!surface.isAir) return surface.fluidState.isEmpty
+    }
+
+    return false
 }
 
 /** Returns the highest feet position under the ceiling with room for the target to stand. */
