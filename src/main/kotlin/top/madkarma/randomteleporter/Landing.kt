@@ -6,6 +6,7 @@ import net.minecraft.server.level.ColumnPos
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.server.level.TicketType
 import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.levelgen.Heightmap
 
 /**
@@ -20,6 +21,20 @@ private const val MAX_COLUMN_ATTEMPTS = 256
  * makes its column unusable, so a few chunks are enough.
  */
 private const val MAX_CHUNK_ATTEMPTS = 4
+
+/** The blocks that hurt whoever stands on or in them. */
+private val HAZARDOUS_BLOCKS =
+    setOf(
+        Blocks.CACTUS,
+        Blocks.MAGMA_BLOCK,
+        Blocks.CAMPFIRE,
+        Blocks.SOUL_CAMPFIRE,
+        Blocks.FIRE,
+        Blocks.SOUL_FIRE,
+        Blocks.POWDER_SNOW,
+        Blocks.SWEET_BERRY_BUSH,
+        Blocks.WITHER_ROSE,
+    )
 
 /**
  * Picks random columns in [area] and completes on the server thread with where to stand in one, or
@@ -96,8 +111,12 @@ private fun surfaceY(level: ServerLevel, column: ColumnPos): Int? {
     // The heightmap of a column without any ground reports the bottom of the world.
     if (y <= level.minY) return null
 
+    val feet = BlockPos(column.x, y, column.z)
+    val ground = level.getBlockState(feet.below())
+
     // Lakes, which the world generator adds after its estimate, can still cover the ground.
-    if (!level.getBlockState(BlockPos(column.x, y - 1, column.z)).fluidState.isEmpty) return null
+    if (!ground.fluidState.isEmpty) return null
+    if (isHazardous(ground) || isHazardous(level.getBlockState(feet))) return null
 
     return y
 }
@@ -111,11 +130,17 @@ private fun floorBelowCeiling(level: ServerLevel, column: ColumnPos): Int? {
         if (!level.getBlockState(position.setY(feetY + 1)).isAir) continue
         if (!level.getBlockState(position.setY(feetY)).isAir) continue
 
-        // The platform covers liquids. Bedrock never counts, since the air pockets inside the
-        // bedrock roof of the Nether would otherwise trap the target in the roof.
+        // The platform covers liquids.
         val ground = level.getBlockState(position.setY(feetY - 1))
-        if ((ground.isSolid || ground.liquid()) && !ground.`is`(Blocks.BEDROCK)) return feetY
+        if ((ground.isSolid || ground.liquid()) && isSafeFloor(ground)) return feetY
     }
 
     return null
 }
+
+// Bedrock never counts, since the air pockets inside the bedrock roof of the Nether would
+// otherwise trap the target in the roof.
+private fun isSafeFloor(ground: BlockState): Boolean =
+    !ground.`is`(Blocks.BEDROCK) && !isHazardous(ground)
+
+private fun isHazardous(state: BlockState): Boolean = state.block in HAZARDOUS_BLOCKS
