@@ -17,7 +17,7 @@ object RtpPermissions {
     /** Teleports the player who runs the command back. */
     val BACK: Predicate<CommandSourceStack> = permission("rtp/back")
 
-    /** Names targets and areas. */
+    /** Names targets and areas, and skips the cooldown. */
     val ADMIN: Predicate<CommandSourceStack> = permission("rtp/admin")
 
     private fun permission(path: String): Predicate<CommandSourceStack> =

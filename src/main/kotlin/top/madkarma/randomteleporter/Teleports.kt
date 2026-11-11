@@ -31,6 +31,19 @@ fun randomTeleport(
 ): Int {
     if (targets.isEmpty()) return fail(source, noTarget())
 
+    val wait = TeleportCooldown.timeLeft(source)
+    if (wait.isPositive()) {
+        return fail(
+            source,
+            Component.translatableWithFallback(
+                "commands.randomteleporter.cooldown",
+                "You can randomly teleport again in %s seconds",
+                wait.inWholeSeconds + 1,
+            ),
+        )
+    }
+
+    TeleportCooldown.start(source)
     targets.forEach { startRandomTeleport(source, it, area) }
     return targets.size
 }

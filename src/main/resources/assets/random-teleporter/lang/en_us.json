@@ -3,5 +3,8 @@
     "commands.randomteleporter.teleported_back": "Teleported %s back to the previous position",
     "commands.randomteleporter.no_target": "No one to teleport. Name the target when the command does not run as a player",
     "commands.randomteleporter.no_previous_position": "%s has not been randomly teleported yet, so it has nowhere to go back to",
-    "commands.randomteleporter.no_safe_position": "Found no safe position to teleport %s to"
+    "commands.randomteleporter.no_safe_position": "Found no safe position to teleport %s to",
+    "commands.randomteleporter.cooldown": "You can randomly teleport again in %s seconds",
+    "gamerule.random-teleporter.rtp_cooldown": "Random teleport cooldown",
+    "gamerule.random-teleporter.rtp_cooldown.description": "The seconds a player without the admin permission waits between random teleports"
 }

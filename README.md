@@ -71,14 +71,21 @@ cheats must be on.
 A permissions mod that supports the permissions of Fabric API can also grant the command to players
 below that level:
 
-| Permission                    | Allows                                     |
-| ----------------------------- | ------------------------------------------ |
-| `random-teleporter:rtp`       | `/rtp`                                     |
-| `random-teleporter:rtp/back`  | `/rtp back`                                |
-| `random-teleporter:rtp/admin` | Every form with a target, radius or region |
+| Permission                    | Allows                                                      |
+| ----------------------------- | ----------------------------------------------------------- |
+| `random-teleporter:rtp`       | `/rtp`                                                      |
+| `random-teleporter:rtp/back`  | `/rtp back`                                                 |
+| `random-teleporter:rtp/admin` | Every form with a target, radius or region, and no cooldown |
 
 The last two only work together with the first. As in every vanilla command, players below
 permission level 2 can name players as targets but cannot use selectors.
+
+## Cooldown
+
+The `random-teleporter:rtp_cooldown` game rule sets how many seconds players without the
+`random-teleporter:rtp/admin` permission wait between random teleports. It is `0` by default, which
+turns the cooldown off. For example, `/gamerule random-teleporter:rtp_cooldown 300` makes them wait
+five minutes.
 
 ## Installation
 
