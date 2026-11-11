@@ -68,6 +68,18 @@ It never picks a position outside the world border.
 Like the vanilla `/tp` command, `/rtp` requires permission level 2. In singleplayer, that means
 cheats must be on.
 
+A permissions mod that supports the permissions of Fabric API can also grant the command to players
+below that level:
+
+| Permission                    | Allows                                     |
+| ----------------------------- | ------------------------------------------ |
+| `random-teleporter:rtp`       | `/rtp`                                     |
+| `random-teleporter:rtp/back`  | `/rtp back`                                |
+| `random-teleporter:rtp/admin` | Every form with a target, radius or region |
+
+The last two only work together with the first. As in every vanilla command, players below
+permission level 2 can name players as targets but cannot use selectors.
+
 ## Installation
 
 The mod runs wherever the server runs:

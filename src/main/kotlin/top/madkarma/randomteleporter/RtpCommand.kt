@@ -18,7 +18,8 @@ private typealias Argument = RequiredArgumentBuilder<CommandSourceStack, *>
 
 /**
  * The `/rtp` command, whose forms the README lists. The forms without a target teleport the player
- * who runs them, and the forms without an area use the whole world.
+ * who runs them, and the forms without an area use the whole world. Every form that names a target
+ * or an area needs the admin permission.
  */
 object RtpCommand {
     private const val TARGET = "target"
@@ -36,10 +37,11 @@ object RtpCommand {
     fun register(dispatcher: CommandDispatcher<CommandSourceStack>) {
         dispatcher.register(
             Commands.literal("rtp")
-                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+                .requires(RtpPermissions.USE)
                 .executes { teleport(it, it.self()) }
                 .then(
                     Commands.literal("back")
+                        .requires(RtpPermissions.BACK)
                         .executes { teleportBack(it.source, it.self()) }
                         .then(targets().executes { teleportBack(it.source, it.targets()) }),
                 )
@@ -131,13 +133,17 @@ object RtpCommand {
         area: TeleportArea = TeleportArea.WORLD,
     ): Int = randomTeleport(context.source, targets, area)
 
-    private fun radius(): Argument = Commands.argument(RADIUS, IntegerArgumentType.integer(0))
+    private fun radius(): Argument =
+        Commands.argument(RADIUS, IntegerArgumentType.integer(0)).requires(RtpPermissions.ADMIN)
 
-    private fun targets(): Argument = Commands.argument(TARGET, EntityArgument.entities())
+    private fun targets(): Argument =
+        Commands.argument(TARGET, EntityArgument.entities()).requires(RtpPermissions.ADMIN)
 
-    private fun entity(name: String): Argument = Commands.argument(name, EntityArgument.entity())
+    private fun entity(name: String): Argument =
+        Commands.argument(name, EntityArgument.entity()).requires(RtpPermissions.ADMIN)
 
-    private fun column(name: String): Argument = Commands.argument(name, Vec2Argument.vec2())
+    private fun column(name: String): Argument =
+        Commands.argument(name, Vec2Argument.vec2()).requires(RtpPermissions.ADMIN)
 
     /** The player who runs the command, or no one when the console or a command block runs it. */
     private fun Context.self(): Collection<Entity> = listOfNotNull(source.player)
