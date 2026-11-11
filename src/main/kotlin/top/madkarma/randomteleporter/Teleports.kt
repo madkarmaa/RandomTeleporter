@@ -2,10 +2,14 @@ package top.madkarma.randomteleporter
 
 import com.mojang.brigadier.Command
 import net.minecraft.commands.CommandSourceStack
+import net.minecraft.core.BlockPos
 import net.minecraft.network.chat.Component
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.phys.Vec3
+import org.slf4j.LoggerFactory
+
+private val LOGGER = LoggerFactory.getLogger(MOD_ID)
 
 /** Brigadier's result for a command that failed. */
 private const val FAILURE = 0
@@ -17,21 +21,46 @@ private fun noTarget(): Component =
         "No one to teleport. Name the target when the command does not run as a player",
     )
 
-/** Teleports [target] to a random safe position in [area] and remembers where it came from. */
+/**
+ * Starts teleporting [target] to a random safe position in [area]. The search reports its outcome
+ * once the chunk of its position loaded.
+ */
 fun randomTeleport(source: CommandSourceStack, target: Entity?, area: TeleportArea): Int {
     if (target == null) return fail(source, noTarget())
 
     val level = target.level() as ServerLevel
-    val landing =
-        findLanding(level, area.intersect(TeleportArea.inside(level.worldBorder)))
-            ?: return fail(
-                source,
-                Component.translatableWithFallback(
-                    "commands.randomteleporter.no_safe_position",
-                    "Found no safe position to teleport %s to",
-                    target.name,
-                ),
-            )
+
+    findLanding(level, area.intersect(TeleportArea.inside(level.worldBorder)))
+        .whenCompleteAsync(
+            { landing, error ->
+                if (error != null) LOGGER.error("The search for a landing position failed", error)
+                finishRandomTeleport(source, target, level, landing)
+            },
+            level.server,
+        )
+    return Command.SINGLE_SUCCESS
+}
+
+private fun finishRandomTeleport(
+    source: CommandSourceStack,
+    target: Entity,
+    level: ServerLevel,
+    landing: BlockPos?,
+) {
+    // The target can die or leave the server while the chunk loads.
+    if (target.isRemoved) return
+
+    if (landing == null) {
+        fail(
+            source,
+            Component.translatableWithFallback(
+                "commands.randomteleporter.no_safe_position",
+                "Found no safe position to teleport %s to",
+                target.name,
+            ),
+        )
+        return
+    }
 
     placePlatform(level, landing)
     TeleportHistory.remember(target)
@@ -50,7 +79,6 @@ fun randomTeleport(source: CommandSourceStack, target: Entity?, area: TeleportAr
         },
         true,
     )
-    return Command.SINGLE_SUCCESS
 }
 
 /** Teleports [target] back to where it was before its last random teleport. */
