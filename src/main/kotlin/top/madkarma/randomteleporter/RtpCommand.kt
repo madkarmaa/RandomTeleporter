@@ -29,8 +29,9 @@ object RtpCommand {
     private const val REGION_FROM_ENTITY = "regionFromEntity"
     private const val REGION_TO_ENTITY = "regionToEntity"
 
-    // When several sibling arguments parse the same input, Brigadier prefers the one added first,
-    // so the order of the branches is part of the command's behavior.
+    // A number is also a valid player name, and when several sibling arguments parse the same
+    // input, Brigadier prefers the one added first. The branches that take numbers therefore come
+    // before the ones that take entities, which makes their order part of the command's behavior.
     fun register(dispatcher: CommandDispatcher<CommandSourceStack>) {
         dispatcher.register(
             Commands.literal("rtp")
@@ -42,44 +43,6 @@ object RtpCommand {
                         .then(entity(TARGET).executes { teleportBack(it.source, it.target()) }),
                 )
                 .then(
-                    entity(TARGET)
-                        .executes { teleport(it, it.target()) }
-                        .then(
-                            Commands.literal("back").executes {
-                                teleportBack(it.source, it.target())
-                            },
-                        )
-                        .then(
-                            withOrigins(
-                                radius().executes { teleport(it, it.target(), it.aroundOrigin()) },
-                            ),
-                        )
-                        .then(
-                            column(REGION_FROM_POS)
-                                .then(
-                                    column(REGION_TO_POS).executes {
-                                        teleport(it, it.target(), it.positionRegion())
-                                    },
-                                ),
-                        ),
-                )
-                .then(
-                    radius()
-                        .executes { teleport(it, it.player(), it.aroundOrigin()) }
-                        .then(
-                            withOrigins(
-                                entity(TARGET).executes {
-                                    teleport(it, it.target(), it.aroundOrigin())
-                                },
-                            ),
-                        )
-                        .then(
-                            column(ORIGIN_POS).executes {
-                                teleport(it, it.player(), it.aroundOrigin(it.column(ORIGIN_POS)))
-                            },
-                        ),
-                )
-                .then(
                     column(REGION_FROM_POS)
                         .then(
                             column(REGION_TO_POS)
@@ -89,6 +52,44 @@ object RtpCommand {
                                         teleport(it, it.target(), it.positionRegion())
                                     },
                                 ),
+                        ),
+                )
+                .then(
+                    radius()
+                        .executes { teleport(it, it.player(), it.aroundOrigin()) }
+                        .then(
+                            column(ORIGIN_POS).executes {
+                                teleport(it, it.player(), it.aroundOrigin(it.column(ORIGIN_POS)))
+                            },
+                        )
+                        .then(
+                            withOrigins(
+                                entity(TARGET).executes {
+                                    teleport(it, it.target(), it.aroundOrigin())
+                                },
+                            ),
+                        ),
+                )
+                .then(
+                    entity(TARGET)
+                        .executes { teleport(it, it.target()) }
+                        .then(
+                            Commands.literal("back").executes {
+                                teleportBack(it.source, it.target())
+                            },
+                        )
+                        .then(
+                            column(REGION_FROM_POS)
+                                .then(
+                                    column(REGION_TO_POS).executes {
+                                        teleport(it, it.target(), it.positionRegion())
+                                    },
+                                ),
+                        )
+                        .then(
+                            withOrigins(
+                                radius().executes { teleport(it, it.target(), it.aroundOrigin()) },
+                            ),
                         ),
                 )
                 .then(
@@ -113,13 +114,13 @@ object RtpCommand {
     private fun withOrigins(node: Argument): Argument =
         node
             .then(
-                entity(ORIGIN_ENTITY).executes {
-                    teleport(it, it.target(), it.aroundOrigin(it.entityColumn(ORIGIN_ENTITY)))
+                column(ORIGIN_POS).executes {
+                    teleport(it, it.target(), it.aroundOrigin(it.column(ORIGIN_POS)))
                 },
             )
             .then(
-                column(ORIGIN_POS).executes {
-                    teleport(it, it.target(), it.aroundOrigin(it.column(ORIGIN_POS)))
+                entity(ORIGIN_ENTITY).executes {
+                    teleport(it, it.target(), it.aroundOrigin(it.entityColumn(ORIGIN_ENTITY)))
                 },
             )
 
