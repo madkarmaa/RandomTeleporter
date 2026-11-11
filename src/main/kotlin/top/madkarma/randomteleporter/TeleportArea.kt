@@ -1,10 +1,11 @@
 package top.madkarma.randomteleporter
 
+import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.random.Random
 import kotlin.random.nextInt
-import net.minecraft.world.phys.Vec2
+import net.minecraft.world.phys.Vec3
 
 /**
  * The farthest a target may be from the center of the world on either axis, which keeps it well
@@ -22,26 +23,22 @@ data class TeleportArea(val minX: Int, val minZ: Int, val maxX: Int, val maxZ: I
 
     companion object {
         /** The whole world that the mod teleports into. */
-        val WORLD: TeleportArea = around(Vec2.ZERO, MAX_DISTANCE)
+        val WORLD: TeleportArea =
+            TeleportArea(-MAX_DISTANCE, -MAX_DISTANCE, MAX_DISTANCE, MAX_DISTANCE)
 
-        /**
-         * The square that reaches [radius] blocks from [center], whose y holds the z coordinate.
-         */
-        fun around(center: Vec2, radius: Int): TeleportArea =
-            TeleportArea(
-                (center.x - radius).toInt(),
-                (center.y - radius).toInt(),
-                (center.x + radius).toInt(),
-                (center.y + radius).toInt(),
-            )
+        /** The square that reaches [radius] blocks from the column of [center]. */
+        fun around(center: Vec3, radius: Int): TeleportArea {
+            val reach = radius.toDouble()
+            return between(center.subtract(reach, 0.0, reach), center.add(reach, 0.0, reach))
+        }
 
-        /** The rectangle between two opposite corners, whose y holds the z coordinate. */
-        fun between(corner: Vec2, oppositeCorner: Vec2): TeleportArea =
+        /** The rectangle between the columns of two opposite corners. */
+        fun between(corner: Vec3, oppositeCorner: Vec3): TeleportArea =
             TeleportArea(
-                min(corner.x, oppositeCorner.x).toInt(),
-                min(corner.y, oppositeCorner.y).toInt(),
-                max(corner.x, oppositeCorner.x).toInt(),
-                max(corner.y, oppositeCorner.y).toInt(),
+                floor(min(corner.x, oppositeCorner.x)).toInt(),
+                floor(min(corner.z, oppositeCorner.z)).toInt(),
+                floor(max(corner.x, oppositeCorner.x)).toInt(),
+                floor(max(corner.z, oppositeCorner.z)).toInt(),
             )
     }
 }

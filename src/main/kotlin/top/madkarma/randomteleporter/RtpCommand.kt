@@ -7,9 +7,10 @@ import com.mojang.brigadier.context.CommandContext
 import net.minecraft.commands.CommandSourceStack
 import net.minecraft.commands.Commands
 import net.minecraft.commands.arguments.EntityArgument
+import net.minecraft.commands.arguments.coordinates.Coordinates
 import net.minecraft.commands.arguments.coordinates.Vec2Argument
 import net.minecraft.world.entity.Entity
-import net.minecraft.world.phys.Vec2
+import net.minecraft.world.phys.Vec3
 
 private typealias Context = CommandContext<CommandSourceStack>
 
@@ -140,12 +141,14 @@ object RtpCommand {
 
     private fun Context.target(): Entity = EntityArgument.getEntity(this, TARGET)
 
-    private fun Context.column(name: String): Vec2 = Vec2Argument.getVec2(this, name)
+    // Vec2Argument.getVec2 rounds to floats, which are too coarse far from the center of the world.
+    private fun Context.column(name: String): Vec3 =
+        getArgument(name, Coordinates::class.java).getPosition(source)
 
-    private fun Context.entityColumn(name: String): Vec2 =
-        EntityArgument.getEntity(this, name).let { Vec2(it.x.toFloat(), it.z.toFloat()) }
+    private fun Context.entityColumn(name: String): Vec3 =
+        EntityArgument.getEntity(this, name).position()
 
-    private fun Context.aroundOrigin(origin: Vec2 = Vec2.ZERO): TeleportArea =
+    private fun Context.aroundOrigin(origin: Vec3 = Vec3.ZERO): TeleportArea =
         TeleportArea.around(origin, IntegerArgumentType.getInteger(this, RADIUS))
 
     private fun Context.positionRegion(): TeleportArea =
