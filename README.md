@@ -34,9 +34,10 @@ hold the player.
 - `/rtp <regionFromEntity> <regionToEntity>`
 - `/rtp <regionFromEntity> <regionToEntity> <target>`
 
-Without a target, the command teleports the player who runs it. Without a radius or region, it
-picks a position up to 28,990,000 blocks from `(0, 0)` on each axis. It never picks a position
-outside the world border.
+Without a target, the command teleports the player who runs it. A target can be a selector that
+matches several entities, such as `@a`, and each of them lands at its own random position. Without a
+radius or region, the command picks a position up to 28,990,000 blocks from `(0, 0)` on each axis.
+It never picks a position outside the world border.
 
 ### Examples
 
@@ -47,6 +48,7 @@ outside the world border.
   random teleport.
 - `/rtp 1000` teleports you up to `1000` blocks from `(0, 0)`.
 - `/rtp Steve` teleports `Steve` anywhere in the world.
+- `/rtp @a` teleports every player anywhere in the world.
 - `/rtp 1000 Steve` and `/rtp Steve 1000` teleport `Steve` up to `1000` blocks from `(0, 0)`.
 - `/rtp 1000 10000 10000` teleports you up to `1000` blocks from `(10000, 10000)`.
 - `/rtp 1000 Steve Alex` and `/rtp Steve 1000 Alex` teleport `Steve` up to `1000` blocks from

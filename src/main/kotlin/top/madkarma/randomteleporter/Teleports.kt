@@ -1,6 +1,5 @@
 package top.madkarma.randomteleporter
 
-import com.mojang.brigadier.Command
 import net.minecraft.commands.CommandSourceStack
 import net.minecraft.core.BlockPos
 import net.minecraft.network.chat.Component
@@ -22,12 +21,21 @@ private fun noTarget(): Component =
     )
 
 /**
- * Starts teleporting [target] to a random safe position in [area]. The search reports its outcome
- * once the chunk of its position loaded.
+ * Starts teleporting each of [targets] to its own random safe position in [area] and returns how
+ * many searches it started. A search reports its outcome once the chunk of its position loaded.
  */
-fun randomTeleport(source: CommandSourceStack, target: Entity?, area: TeleportArea): Int {
-    if (target == null) return fail(source, noTarget())
+fun randomTeleport(
+    source: CommandSourceStack,
+    targets: Collection<Entity>,
+    area: TeleportArea,
+): Int {
+    if (targets.isEmpty()) return fail(source, noTarget())
 
+    targets.forEach { startRandomTeleport(source, it, area) }
+    return targets.size
+}
+
+private fun startRandomTeleport(source: CommandSourceStack, target: Entity, area: TeleportArea) {
     val level = target.level() as ServerLevel
 
     findLanding(level, area.intersect(TeleportArea.inside(level.worldBorder)))
@@ -38,7 +46,6 @@ fun randomTeleport(source: CommandSourceStack, target: Entity?, area: TeleportAr
             },
             level.server,
         )
-    return Command.SINGLE_SUCCESS
 }
 
 private fun finishRandomTeleport(
@@ -81,15 +88,22 @@ private fun finishRandomTeleport(
     )
 }
 
-/** Teleports [target] back to where it was before its last random teleport. */
-fun teleportBack(source: CommandSourceStack, target: Entity?): Int {
-    if (target == null) return fail(source, noTarget())
+/**
+ * Teleports each of [targets] back to where it was before its last random teleport and returns how
+ * many it teleported.
+ */
+fun teleportBack(source: CommandSourceStack, targets: Collection<Entity>): Int {
+    if (targets.isEmpty()) return fail(source, noTarget())
 
+    return targets.count { teleportBack(source, it) }
+}
+
+private fun teleportBack(source: CommandSourceStack, target: Entity): Boolean {
     val previous = TeleportHistory.previousPosition(target)
     val level = previous?.let { source.server.getLevel(it.dimension) }
 
     if (previous == null || level == null) {
-        return fail(
+        fail(
             source,
             Component.translatableWithFallback(
                 "commands.randomteleporter.no_previous_position",
@@ -97,6 +111,7 @@ fun teleportBack(source: CommandSourceStack, target: Entity?): Int {
                 target.name,
             ),
         )
+        return false
     }
 
     teleport(target, level, previous.position)
@@ -111,7 +126,7 @@ fun teleportBack(source: CommandSourceStack, target: Entity?): Int {
         },
         true,
     )
-    return Command.SINGLE_SUCCESS
+    return true
 }
 
 private fun teleport(target: Entity, level: ServerLevel, position: Vec3) {

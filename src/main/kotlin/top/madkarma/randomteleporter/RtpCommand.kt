@@ -37,59 +37,59 @@ object RtpCommand {
         dispatcher.register(
             Commands.literal("rtp")
                 .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
-                .executes { teleport(it, it.player()) }
+                .executes { teleport(it, it.self()) }
                 .then(
                     Commands.literal("back")
-                        .executes { teleportBack(it.source, it.player()) }
-                        .then(entity(TARGET).executes { teleportBack(it.source, it.target()) }),
+                        .executes { teleportBack(it.source, it.self()) }
+                        .then(targets().executes { teleportBack(it.source, it.targets()) }),
                 )
                 .then(
                     column(REGION_FROM_POS)
                         .then(
                             column(REGION_TO_POS)
-                                .executes { teleport(it, it.player(), it.positionRegion()) }
+                                .executes { teleport(it, it.self(), it.positionRegion()) }
                                 .then(
-                                    entity(TARGET).executes {
-                                        teleport(it, it.target(), it.positionRegion())
+                                    targets().executes {
+                                        teleport(it, it.targets(), it.positionRegion())
                                     },
                                 ),
                         ),
                 )
                 .then(
                     radius()
-                        .executes { teleport(it, it.player(), it.aroundOrigin()) }
+                        .executes { teleport(it, it.self(), it.aroundOrigin()) }
                         .then(
                             column(ORIGIN_POS).executes {
-                                teleport(it, it.player(), it.aroundOrigin(it.column(ORIGIN_POS)))
+                                teleport(it, it.self(), it.aroundOrigin(it.column(ORIGIN_POS)))
                             },
                         )
                         .then(
                             withOrigins(
-                                entity(TARGET).executes {
-                                    teleport(it, it.target(), it.aroundOrigin())
+                                targets().executes {
+                                    teleport(it, it.targets(), it.aroundOrigin())
                                 },
                             ),
                         ),
                 )
                 .then(
-                    entity(TARGET)
-                        .executes { teleport(it, it.target()) }
+                    targets()
+                        .executes { teleport(it, it.targets()) }
                         .then(
                             Commands.literal("back").executes {
-                                teleportBack(it.source, it.target())
+                                teleportBack(it.source, it.targets())
                             },
                         )
                         .then(
                             column(REGION_FROM_POS)
                                 .then(
                                     column(REGION_TO_POS).executes {
-                                        teleport(it, it.target(), it.positionRegion())
+                                        teleport(it, it.targets(), it.positionRegion())
                                     },
                                 ),
                         )
                         .then(
                             withOrigins(
-                                radius().executes { teleport(it, it.target(), it.aroundOrigin()) },
+                                radius().executes { teleport(it, it.targets(), it.aroundOrigin()) },
                             ),
                         ),
                 )
@@ -97,10 +97,10 @@ object RtpCommand {
                     entity(REGION_FROM_ENTITY)
                         .then(
                             entity(REGION_TO_ENTITY)
-                                .executes { teleport(it, it.player(), it.entityRegion()) }
+                                .executes { teleport(it, it.self(), it.entityRegion()) }
                                 .then(
-                                    entity(TARGET).executes {
-                                        teleport(it, it.target(), it.entityRegion())
+                                    targets().executes {
+                                        teleport(it, it.targets(), it.entityRegion())
                                     },
                                 ),
                         ),
@@ -116,30 +116,33 @@ object RtpCommand {
         node
             .then(
                 column(ORIGIN_POS).executes {
-                    teleport(it, it.target(), it.aroundOrigin(it.column(ORIGIN_POS)))
+                    teleport(it, it.targets(), it.aroundOrigin(it.column(ORIGIN_POS)))
                 },
             )
             .then(
                 entity(ORIGIN_ENTITY).executes {
-                    teleport(it, it.target(), it.aroundOrigin(it.entityColumn(ORIGIN_ENTITY)))
+                    teleport(it, it.targets(), it.aroundOrigin(it.entityColumn(ORIGIN_ENTITY)))
                 },
             )
 
     private fun teleport(
         context: Context,
-        target: Entity?,
+        targets: Collection<Entity>,
         area: TeleportArea = TeleportArea.WORLD,
-    ): Int = randomTeleport(context.source, target, area)
+    ): Int = randomTeleport(context.source, targets, area)
 
     private fun radius(): Argument = Commands.argument(RADIUS, IntegerArgumentType.integer(0))
+
+    private fun targets(): Argument = Commands.argument(TARGET, EntityArgument.entities())
 
     private fun entity(name: String): Argument = Commands.argument(name, EntityArgument.entity())
 
     private fun column(name: String): Argument = Commands.argument(name, Vec2Argument.vec2())
 
-    private fun Context.player(): Entity? = source.player
+    /** The player who runs the command, or no one when the console or a command block runs it. */
+    private fun Context.self(): Collection<Entity> = listOfNotNull(source.player)
 
-    private fun Context.target(): Entity = EntityArgument.getEntity(this, TARGET)
+    private fun Context.targets(): Collection<Entity> = EntityArgument.getEntities(this, TARGET)
 
     // Vec2Argument.getVec2 rounds to floats, which are too coarse far from the center of the world.
     private fun Context.column(name: String): Vec3 =
