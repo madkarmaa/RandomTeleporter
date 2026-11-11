@@ -29,6 +29,8 @@ private val PLATFORM_REPLACEABLE_BLOCKS =
 
 /** Picks a random column in [area] and returns where to stand in it, or null if none fits. */
 fun findLanding(level: ServerLevel, area: TeleportArea): BlockPos? {
+    if (area.isEmpty) return null
+
     repeat(MAX_ATTEMPTS) {
         val x = area.randomX()
         val z = area.randomZ()

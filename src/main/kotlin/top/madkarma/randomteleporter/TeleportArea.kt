@@ -14,12 +14,25 @@ import net.minecraft.world.phys.Vec3
 const val MAX_DISTANCE = 28_990_000
 
 /**
- * The rectangle of columns that a random teleport picks its target from. Both bounds are inside.
+ * The rectangle of columns that a random teleport picks its target from. Both bounds are inside,
+ * and an area whose bounds cross holds no columns.
  */
 data class TeleportArea(val minX: Int, val minZ: Int, val maxX: Int, val maxZ: Int) {
-    fun randomX(): Int = Random.nextInt(minX..maxX).coerceIn(-MAX_DISTANCE, MAX_DISTANCE)
+    val isEmpty: Boolean
+        get() = minX > maxX || minZ > maxZ
 
-    fun randomZ(): Int = Random.nextInt(minZ..maxZ).coerceIn(-MAX_DISTANCE, MAX_DISTANCE)
+    fun randomX(): Int = Random.nextInt(minX..maxX)
+
+    fun randomZ(): Int = Random.nextInt(minZ..maxZ)
+
+    /** The columns of this area that are also in [other]. */
+    fun intersect(other: TeleportArea): TeleportArea =
+        TeleportArea(
+            max(minX, other.minX),
+            max(minZ, other.minZ),
+            min(maxX, other.maxX),
+            min(maxZ, other.maxZ),
+        )
 
     companion object {
         /** The whole world that the mod teleports into. */
@@ -35,10 +48,11 @@ data class TeleportArea(val minX: Int, val minZ: Int, val maxX: Int, val maxZ: I
         /** The rectangle between the columns of two opposite corners. */
         fun between(corner: Vec3, oppositeCorner: Vec3): TeleportArea =
             TeleportArea(
-                floor(min(corner.x, oppositeCorner.x)).toInt(),
-                floor(min(corner.z, oppositeCorner.z)).toInt(),
-                floor(max(corner.x, oppositeCorner.x)).toInt(),
-                floor(max(corner.z, oppositeCorner.z)).toInt(),
-            )
+                    floor(min(corner.x, oppositeCorner.x)).toInt(),
+                    floor(min(corner.z, oppositeCorner.z)).toInt(),
+                    floor(max(corner.x, oppositeCorner.x)).toInt(),
+                    floor(max(corner.z, oppositeCorner.z)).toInt(),
+                )
+                .intersect(WORLD)
     }
 }
