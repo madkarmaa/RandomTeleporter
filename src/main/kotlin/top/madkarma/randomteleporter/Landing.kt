@@ -121,21 +121,42 @@ private fun surfaceY(level: ServerLevel, column: ColumnPos): Int? {
     return y
 }
 
-/** Returns the highest feet position under the ceiling with room for the target to stand. */
+/** Returns the feet position under the ceiling with the best ground and room to stand. */
 private fun floorBelowCeiling(level: ServerLevel, column: ColumnPos): Int? {
+    // The platform covers liquids, but it is better to land where the target needs none.
+    return tallestGapFloor(level, column) { it.isSolid }
+        ?: tallestGapFloor(level, column) { it.liquid() }
+}
+
+/**
+ * Returns the feet position above the ground that [isGround] accepts with the most air over it,
+ * since a gap that barely fits the target is often a pocket sealed inside the rock.
+ */
+private fun tallestGapFloor(
+    level: ServerLevel,
+    column: ColumnPos,
+    isGround: (BlockState) -> Boolean,
+): Int? {
     val position = BlockPos.MutableBlockPos(column.x, 0, column.z)
-    val ceilingY = level.minY + level.logicalHeight
+    var feetY: Int? = null
+    var tallestGap = 1
+    var gap = 0
 
-    for (feetY in ceilingY - 2 downTo level.minY + 1) {
-        if (!level.getBlockState(position.setY(feetY + 1)).isAir) continue
-        if (!level.getBlockState(position.setY(feetY)).isAir) continue
+    for (y in level.minY + level.logicalHeight - 1 downTo level.minY) {
+        val state = level.getBlockState(position.setY(y))
+        if (state.isAir) {
+            gap++
+            continue
+        }
 
-        // The platform covers liquids.
-        val ground = level.getBlockState(position.setY(feetY - 1))
-        if ((ground.isSolid || ground.liquid()) && isSafeFloor(ground)) return feetY
+        if (gap > tallestGap && isGround(state) && isSafeFloor(state)) {
+            tallestGap = gap
+            feetY = y + 1
+        }
+        gap = 0
     }
 
-    return null
+    return feetY
 }
 
 // Bedrock never counts, since the air pockets inside the bedrock roof of the Nether would
