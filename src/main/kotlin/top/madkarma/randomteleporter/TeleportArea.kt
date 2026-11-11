@@ -1,15 +1,17 @@
 package top.madkarma.randomteleporter
 
+import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.random.Random
 import kotlin.random.nextInt
+import net.minecraft.world.level.border.WorldBorder
 import net.minecraft.world.phys.Vec3
 
 /**
  * The farthest a target may be from the center of the world on either axis, which keeps it well
- * inside the world border.
+ * inside the largest world border.
  */
 const val MAX_DISTANCE = 28_990_000
 
@@ -54,5 +56,14 @@ data class TeleportArea(val minX: Int, val minZ: Int, val maxX: Int, val maxZ: I
                     floor(max(corner.z, oppositeCorner.z)).toInt(),
                 )
                 .intersect(WORLD)
+
+        /** The columns that are completely inside [border]. */
+        fun inside(border: WorldBorder): TeleportArea =
+            TeleportArea(
+                ceil(border.minX).toInt(),
+                ceil(border.minZ).toInt(),
+                floor(border.maxX).toInt() - 1,
+                floor(border.maxZ).toInt() - 1,
+            )
     }
 }

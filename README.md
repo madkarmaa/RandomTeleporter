@@ -35,7 +35,8 @@ hold the player.
 - `/rtp <regionFromEntity> <regionToEntity> <target>`
 
 Without a target, the command teleports the player who runs it. Without a radius or region, it
-picks a position up to 28,990,000 blocks from `(0, 0)` on each axis.
+picks a position up to 28,990,000 blocks from `(0, 0)` on each axis. It never picks a position
+outside the world border.
 
 ### Examples
 

@@ -22,7 +22,7 @@ fun randomTeleport(source: CommandSourceStack, target: Entity?, area: TeleportAr
 
     val level = target.level() as ServerLevel
     val landing =
-        findLanding(level, area)
+        findLanding(level, area.intersect(TeleportArea.inside(level.worldBorder)))
             ?: return fail(
                 source,
                 Component.translatableWithFallback(
