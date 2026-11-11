@@ -5,6 +5,7 @@ import net.minecraft.commands.CommandSourceStack
 import net.minecraft.network.chat.Component
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.entity.Entity
+import net.minecraft.world.phys.Vec3
 
 /** Brigadier's result for a command that failed. */
 private const val FAILURE = 0
@@ -34,16 +35,7 @@ fun randomTeleport(source: CommandSourceStack, target: Entity?, area: TeleportAr
 
     placePlatform(level, landing)
     TeleportHistory.remember(target)
-    target.teleportTo(
-        level,
-        landing.x + 0.5,
-        landing.y.toDouble(),
-        landing.z + 0.5,
-        setOf(),
-        target.yRot,
-        target.xRot,
-        false,
-    )
+    teleport(target, level, Vec3.atBottomCenterOf(landing))
 
     source.sendSuccess(
         {
@@ -65,27 +57,21 @@ fun randomTeleport(source: CommandSourceStack, target: Entity?, area: TeleportAr
 fun teleportBack(source: CommandSourceStack, target: Entity?): Int {
     if (target == null) return fail(source, noTarget())
 
-    val previousPosition =
-        TeleportHistory.previousPosition(target)
-            ?: return fail(
-                source,
-                Component.translatableWithFallback(
-                    "commands.randomteleporter.no_previous_position",
-                    "%s has not been randomly teleported yet, so it has nowhere to go back to",
-                    target.name,
-                ),
-            )
+    val previous = TeleportHistory.previousPosition(target)
+    val level = previous?.let { source.server.getLevel(it.dimension) }
 
-    target.teleportTo(
-        target.level() as ServerLevel,
-        previousPosition.x,
-        previousPosition.y,
-        previousPosition.z,
-        setOf(),
-        target.yRot,
-        target.xRot,
-        false,
-    )
+    if (previous == null || level == null) {
+        return fail(
+            source,
+            Component.translatableWithFallback(
+                "commands.randomteleporter.no_previous_position",
+                "%s has not been randomly teleported yet, so it has nowhere to go back to",
+                target.name,
+            ),
+        )
+    }
+
+    teleport(target, level, previous.position)
 
     source.sendSuccess(
         {
@@ -98,6 +84,19 @@ fun teleportBack(source: CommandSourceStack, target: Entity?): Int {
         true,
     )
     return Command.SINGLE_SUCCESS
+}
+
+private fun teleport(target: Entity, level: ServerLevel, position: Vec3) {
+    target.teleportTo(
+        level,
+        position.x,
+        position.y,
+        position.z,
+        setOf(),
+        target.yRot,
+        target.xRot,
+        false,
+    )
 }
 
 private fun fail(source: CommandSourceStack, message: Component): Int {

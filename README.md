@@ -41,8 +41,8 @@ outside the world border.
 ### Examples
 
 - `/rtp` teleports you anywhere in the world.
-- `/rtp back` teleports you back to where you were before your last random teleport. The mod
-  forgets these positions when the server stops.
+- `/rtp back` teleports you back to where you were before your last random teleport, even if that
+  was in another dimension. The mod forgets these positions when the server stops.
 - `/rtp back Steve` and `/rtp Steve back` teleport `Steve` back to where they were before their last
   random teleport.
 - `/rtp 1000` teleports you up to `1000` blocks from `(0, 0)`.
